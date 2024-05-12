@@ -1,4 +1,5 @@
-import {TYPE_TV, TYPE_MOVIE} from '../config'
+import {API_URL,TYPE_TV, TYPE_MOVIE,apiKey,lang} from '../config'
+import axios from 'axios'
 
 export function getRandomIntInclusive(min, max) {
   min = Math.ceil(min)
@@ -19,4 +20,10 @@ export function getRandomSerie() {
 }
 export function getRandomId(type = TYPE_MOVIE) {
   return type === TYPE_TV ? getRandomSerie() : getRandomMovie()
+}
+export const clientApi = endpoint => {
+  const page = 1
+  const startChar = endpoint.includes('?') ? `&` : `?`
+  const keyLang = `${startChar}api_key=${apiKey}&language=${lang}&page=${page}`
+  return axios.get(`${API_URL}/${endpoint}${keyLang}`)
 }
