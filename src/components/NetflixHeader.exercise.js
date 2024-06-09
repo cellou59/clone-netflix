@@ -1,5 +1,6 @@
 import React from 'react'
 // 🐶 importe le composant 'HeaderSkeleton'
+import {HeaderSkeleton} from './skeletons/HeaderSkeleton'
 import {imagePathOriginal, TYPE_MOVIE} from '../config'
 
 const NetflixHeader = ({movie, type = TYPE_MOVIE}) => {
@@ -14,8 +15,7 @@ const NetflixHeader = ({movie, type = TYPE_MOVIE}) => {
     height: '448px',
   }
   if (!movie) {
-    // 🐶 retoune <HeaderSkeleton />
-    return <></>
+    return <HeaderSkeleton />
   }
   return (
     <header style={banner}>
