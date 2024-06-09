@@ -42,32 +42,25 @@ const NetflixNews = () => {
     <div>
       <NetflixAppBar />
       <NetflixHeader movie={headerMovie?.data} type={type} />
-      {/* 
-        🐶 utilise les bons 'props' pour respacter les spécifications de   
-        👨‍✈️ Hugo le chef de projet : "A venir"
-      */}
       <NetflixRow
         wideImage={true}
         watermark={true}
         type={TYPE_MOVIE}
-        filter="trending"
-        title="Films Netflix"
+        filter="latest"
+        title="A venir"
       />
-      {/* 
-        🐶 utilise les bons 'props' pour respacter les spécifications de   
-        👨‍✈️ Hugo le chef de projet : "Nouveauté"
-      */}
+
       <NetflixRow
         wideImage={false}
         watermark={true}
-        type={TYPE_TV}
-        filter="trending"
-        title="Série Netflix"
+        type={TYPE_MOVIE}
+        filter="latest"
+        title="Nouveauté"
       />
 
       <NetflixRow
         type={TYPE_MOVIE}
-        filter="toprated"
+        filter="populaire"
         title="Les mieux notés"
         watermark={true}
         wideImage={true}

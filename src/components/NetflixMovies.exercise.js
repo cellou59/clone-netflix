@@ -3,14 +3,13 @@ import {NetflixAppBar} from './NetflixAppBar'
 import {NetflixRow} from './NetflixRow'
 import {NetFlixFooter} from './NetFlixFooter'
 import {NetflixHeader} from './NetflixHeader'
-// 🐶 supprime getRandomType nous n'utilisons plus de types aléatoire
-import {getRandomType, getRandomId} from '../utils/helper'
+import {getRandomId} from '../utils/helper'
 import {clientApi} from '../utils/clientApi'
 import {makeStyles} from '@mui/styles'
 import {Alert, AlertTitle} from '@mui/material'
 import CircularProgress from '@mui/material/CircularProgress'
 import {useFetchData} from '../utils/hooks'
-import {TYPE_MOVIE, TYPE_TV} from '../config'
+import {TYPE_MOVIE} from '../config'
 import './Netflix.css'
 
 const useStyles = makeStyles(theme => ({
@@ -27,14 +26,12 @@ const useStyles = makeStyles(theme => ({
 const NetflixMovies = () => {
   const classes = useStyles()
   const {data: headerMovie, error, status, execute} = useFetchData()
-  // 🐶 fixe le bon type
-  const [type] = React.useState(getRandomType())
-  const defaultMovieId = getRandomId(type)
+  const defaultMovieId = getRandomId(TYPE_MOVIE)
 
   React.useEffect(() => {
-    execute(clientApi(`${type}/${defaultMovieId}`))
+    execute(clientApi(`${TYPE_MOVIE}/${defaultMovieId}`))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [execute, type])
+  }, [execute, TYPE_MOVIE])
 
   if (status === 'error') {
     // sera catché par ErrorBoundary
@@ -43,7 +40,7 @@ const NetflixMovies = () => {
   return (
     <div>
       <NetflixAppBar />
-      <NetflixHeader movie={headerMovie?.data} type={type} />
+      <NetflixHeader movie={headerMovie?.data} type={TYPE_MOVIE} />
       <NetflixRow
         wideImage={true}
         watermark={true}
@@ -51,21 +48,6 @@ const NetflixMovies = () => {
         filter="trending"
         title="Films Netflix"
       />
-      {/* 
-        🐶 utilise les bons 'props' pour respacter les spécifications de   
-        👨‍✈️ Hugo le chef de projet : "Les mieux notés"
-      */}
-      <NetflixRow
-        wideImage={false}
-        watermark={true}
-        type={TYPE_TV}
-        filter="trending"
-        title="Série Netflix"
-      />
-      {/* 
-        🐶 Utilise les bons 'props' pour respacter les spécifications de   
-        👨‍✈️ Hugo le chef de projet : "Les films pouplaires"
-      */}
       <NetflixRow
         type={TYPE_MOVIE}
         filter="toprated"
@@ -73,27 +55,28 @@ const NetflixMovies = () => {
         watermark={true}
         wideImage={true}
       />
-      {/* 
-        🐶 Utilise les bons 'props' pour respacter les spécifications de   
-        👨‍✈️ Hugo le chef de projet : "Films Fantastiques"
-      */}
+  
       <NetflixRow
-        type={TYPE_TV}
-        filter="genre"
-        param="10759"
-        title="Action & aventure"
+        type={TYPE_MOVIE}
+        filter="populaire"
+        title="Les films populaires "
         watermark={true}
         wideImage={true}
       />
-      {/* 
-        🐶 Utilise les bons 'props' pour respacter les spécifications de   
-        👨‍✈️ Hugo le chef de projet : "Les films de science fiction"
-      */}
+
       <NetflixRow
         type={TYPE_MOVIE}
         filter="genre"
-        param="53"
-        title="Les meilleurs Thriller"
+        param="14"
+        title="Les films fantastiques"
+        watermark={false}
+        wideImage={false}
+      />
+      <NetflixRow
+        type={TYPE_MOVIE}
+        filter="genre"
+        param="878"
+        title="Les films de sciences fictions"
         watermark={false}
         wideImage={false}
       />
