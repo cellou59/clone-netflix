@@ -12,7 +12,7 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import Alert from '@mui/material/Alert'
 import CircularProgress from '@mui/material/CircularProgress'
-// 🐶 importe 'AuthContext' 
+import { useAuth } from 'context/AuthContext'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -28,10 +28,11 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const FormLogin = ({create = false, login, register, logout}) => {
+const FormLogin = ({create = false}) => {
   const [checked, setChecked] = React.useState(false)
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
+  const {login, register} = useAuth()
   const classes = useStyles()
   const label = create ? 'Inscrivez vous' : 'Connexion'
 
@@ -107,13 +108,9 @@ function PopupLogin({
   open,
   handleClose,
   signup = false,
-  login,
-  register,
-  logout,
-  error,
   status,
 }) {
-  // 🐶 utilise useContext pour recupérer {login,logout,register,authError:error}
+  const {login,logout,register,authError:error} = useAuth()
   const classes = useStyles()
   const [create, setCreate] = React.useState(signup)
   const handleSignUp = () => {
