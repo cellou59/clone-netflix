@@ -8,10 +8,31 @@ import {clientAuth} from './utils/clientApi'
 import {useFetchData} from './utils/hooks'
 import Backdrop from '@mui/material/Backdrop'
 import CircularProgress from '@mui/material/CircularProgress'
-// 🐶 importe {QueryClient, QueryClientProvider} depuis 'react-query'
+import {QueryClient, QueryClientProvider} from 'react-query'
+import {ReactQueryDevtools} from 'react-query/devtools'
 
-// 🐶 instancie 'queryClient' avec `new QueryClient()`
-// 📑 https://react-query.tanstack.com/reference/QueryClientProvider#_top
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      useErrorBoundary: true,
+      refetchOnWindowFocus: false,
+      retryDelay: 500,
+      retry: (failureCount, error) => {
+        if (error.status === 404) return false
+        else if (error.status === 401) return false
+        else if (failureCount > 3) return false
+        else return true
+      },
+    },
+    mutations: {
+      useErrorBoundary: false,
+      refetchOnWindowFocus: false,
+      retryDelay: 500,
+      retry: 1,
+    },
+  },
+  
+})
 
 const theme = createTheme({
   palette: {
@@ -55,23 +76,28 @@ function App() {
   const logout = () => {
     authNetflix.logout()
     setData(null)
+    queryClient.clear()
   }
 
   return (
-    // 🐶 Wrappe tout le rendu par <QueryClientProvider>
-    // passe 'queryClient' en prop 'client'
-    // 📑 https://react-query.tanstack.com/reference/QueryClientProvider#_top
-    <ThemeProvider theme={theme}>
-      {status === 'fetching' ? (
-        <Backdrop open={true}>
-          <CircularProgress color="primary" />
-        </Backdrop>
-      ) : authUser ? (
-        <AuthApp logout={logout} />
-      ) : (
-        <UnauthApp login={login} register={register} error={authError} />
-      )}
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      {
+        process.env.NODE_ENV === 'development' && (
+          <ReactQueryDevtools initialIsOpen={false} />
+        )
+      }
+      <ThemeProvider theme={theme}>
+        {status === 'fetching' ? (
+          <Backdrop open={true}>
+            <CircularProgress color="primary" />
+          </Backdrop>
+        ) : authUser ? (
+          <AuthApp logout={logout} />
+        ) : (
+          <UnauthApp login={login} register={register} error={authError} />
+        )}
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
 

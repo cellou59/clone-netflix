@@ -1,11 +1,7 @@
 import React from 'react'
 import {imagePathOriginal, TYPE_MOVIE} from '../config'
 import {HeaderSkeleton} from './skeletons/HeaderSkeleton'
-// ⛏️ supprime 'useFetchData' car nous ne l'utiliseront plus ici
-import {useFetchData} from '../utils/hooks'
-// 🐶 importe {useQuery , queryClient ,useMutation}
-import {clientNetFlix} from '../utils/clientApi'
-import * as authNetflix from '../utils/authNetflixProvider'
+import {useBookmark,useAddBookmark,useDeleteBookmark} from '../utils/hooksMovies'
 import Snackbar from '@mui/material/Snackbar'
 import MuiAlert from '@mui/material/Alert'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -15,25 +11,8 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 })
 
 const NetflixHeader = ({movie, type = TYPE_MOVIE}) => {
-  // ⛏️ supprime 'useFetchData' car nous ne l'utiliseront plus ici
-  const {data, error, status, execute} = useFetchData()
-
-  // 🐶 Utilise le hook 'useQueryClient' qui nous permettra de supprimer
-  // les données en cache avec 🤖 `queryClient.invalidateQueries('idquery')`
-  // 🤖 const queryClient = useQueryClient()
-
-  // ⛏️ supprime 'callBookmark' car nous ne l'utiliseront plus ici
-  const [callBookmark, setCallBookmark] = React.useState(false)
-  // ce boolean permettait d'afficher les notifications uniquement
-  // après un clique sur Ajouter/supprimer favoris.
-  // Comme maintenant tu vas utiliser 'useMutation' on pourra detecter
-  // un succès ou une erreur 'onSuccess' 'onError', nous mettrons à jour un state
-  // dédié pour l'erreur de mutation 'mutateBookmarkError'
-  // 📑 https://react-query.tanstack.com/guides/migrating-to-react-query-3#mutationmutate-no-longer-return-a-promise
-
-  // 🐶 créé un state 'mutateBookmarkError'
-
   const [snackbarOpen, setSnackbarOpen] = React.useState(false)
+  const [mutateBookmarkError,setMutateBookmarkError] = React.useState() 
   const title = type === TYPE_MOVIE ? movie?.title : movie?.name
   const imageUrl = `${imagePathOriginal}${movie?.backdrop_path}`
   const banner = {
@@ -44,119 +23,33 @@ const NetflixHeader = ({movie, type = TYPE_MOVIE}) => {
     objectFit: 'contain',
     height: '448px',
   }
-
-  // ⛏️ supprime le hook 'useEffect' qui fait appel à la liste des favoris
-  // 'bookmark' car on utilisera 'useQuery'
-  React.useEffect(() => {
-    async function getTokenExecute() {
-      const token = await authNetflix.getToken()
-      execute(clientNetFlix(`bookmark`, {token}))
+  const data = useBookmark()
+  const addMutation = useAddBookmark({
+      onSuccess: () => {
+        setSnackbarOpen(true)
+        setMutateBookmarkError()
+      },
+      onError: (error) => {
+        setSnackbarOpen(true)
+        setMutateBookmarkError(error)
+      }
     }
-    getTokenExecute()
-  }, [execute])
+  ) 
 
-  // 🐶 Fait l'appel HTTP 'bookmark' en utilisant 'useQuery'
-  // 📑 https://react-query.tanstack.com/reference/useQueries
-  //
-  // par destructuration recupère {data}
-  // 1. Le premier paramètre de 'useQuery' est un nom unique pour identifier la requette
-  //  dans notre cas il s'agira de 'bookmark'
-  //
-  // 2. Le deuxieme paramètre est une fonction qui recupère les données
-  //  dans notre cas on utilisera un fonction asynchrone car on a besoin de recuperer le token
-  //
-  // 🤖
-  // async () => {
-  //   const token = await authNetflix.getToken()
-  //   return clientNetFlix(`bookmark`, {token})
-  // }
-
-  // ⛏️ supprime le hook 'useEffect'
-  React.useEffect(() => {
-    setSnackbarOpen(true)
-  }, [status])
-
-  // 🐶 utilise le hook 'useMutation' pour ajouter aux favoris
-  // 🤖 `const addMutation = useMutation`
-  // 📑 https://react-query.tanstack.com/reference/useMutation#_top
-  // utilise ce hook pour faire un appel HTTP pour ajouter une bookmark
-  // 1. le premier parametre est une fonction permetant de faire l'appel HTTP
-  // passe un fontion async avec les caractéristiques suivantes:
-  // - un objet en paramètre avec les propriétés {type, id}
-  // - appelle `await authNetflix.getToken()` pour récuperer le token
-  // - retourne `return clientNetFlix` avec les bon paramètres
-  //  a. le endpoint : `bookmark/${type}`
-  //  b. un objet contenant
-  //  - 'token'
-  //  - 'data' contenant l'id
-  //  - 'method' : 'POST'
-  //
-  // 2. Le deuxième paramètre est un objet {onSuccess,onError}
-  //  a. onSucces : une fonction qui supprime la memoire cache,
-  //    - queryClient.invalidateQueries('bookmark')
-  //    - setSnackbarOpen(true)
-  //    - setMutateBookmarkError()
-  //  b. onError : une fonction avec un parametre (error)
-  //    - setSnackbarOpen(true)
-  //    - setMutateBookmarkError(error)
-
-  // 🐶 utilise le hook 'useMutation' pour supprimer aux favoris
-  // 🤖 `const deleteMutation = useMutation`
-  // 📑 https://react-query.tanstack.com/reference/useMutation#_top
-  // utilise ce hook pour faire un appel HTTP pour ajouter une bookmark
-  // 1. le premier parametre est une fonction permetant de faire l'appel HTTP
-  // passe un fontion async avec les caractéristiques suivantes:
-  // - un objet en paramètre avec les propriétés {type, id}
-  // - appelle `await authNetflix.getToken()` pour récuperer le token
-  // - retourne `return clientNetFlix` avec les bon paramètres
-  //  a. le endpoint : `bookmark/${type}`
-  //  b. un objet contenant
-  //  - 'token'
-  //  - 'data' contenant l'id
-  //  - 'method' : 'DELETE'
-  //
-  // 2. Le deuxième paramètre est un objet {onSuccess,onError}
-  //  a. onSucces : une fonction qui supprime la memoire cache,
-  //    - queryClient.invalidateQueries('bookmark')
-  //    - setSnackbarOpen(true)
-  //    - setMutateBookmarkError()
-  //  b. onError : une fonction avec un parametre (error)
-  //    - setSnackbarOpen(true)
-  //    - setMutateBookmarkError(error)
-
-  // 🐶 'handleAddToListClick' va appeler la fonction 'mutate' de 'useMutation'
-  // 📑 https://react-query.tanstack.com/guides/migrating-to-react-query-3#mutationmutate-no-longer-return-a-promise
-  const handleAddToListClick = async () => {
-    // ⛏️ supprime le contenu de la fonction (elle n'a plus besoin d'etre async)
-    const token = await authNetflix.getToken()
-    setCallBookmark(true)
-    execute(
-      clientNetFlix(`bookmark/${type}`, {
-        token,
-        data: {id: movie.id},
-        method: 'POST',
-      }),
-    )
-    // 🐶 utilise `addMutation.mutate` pour declancher la mutation
-    // passe en paramètre un object avec {type,id}
+  const deleteMutation = useDeleteBookmark({
+    onSuccess: () => {
+      setSnackbarOpen(true)
+      setMutateBookmarkError()
+    },
+    onError: (error) => {
+      setSnackbarOpen(true)
+      setMutateBookmarkError(error)
+    }
   }
+  )
+  const handleAddToListClick =  () =>  addMutation.mutate({type,id:movie?.id})
+  const handleDeleteToListClick = () => deleteMutation.mutate({type,id:movie?.id})
 
-  // 🐶 'handleDeleteToListClick' va appeler la fonction 'mutate' de 'useMutation'
-  // 📑 https://react-query.tanstack.com/guides/migrating-to-react-query-3#mutationmutate-no-longer-return-a-promise
-  const handleDeleteToListClick = async () => {
-    // ⛏️ supprime le contenu de la fonction (elle n'a plus besoin d'etre async)
-    const token = await authNetflix.getToken()
-    execute(
-      clientNetFlix(`bookmark/${type}`, {
-        token,
-        data: {id: movie.id},
-        method: 'DELETE',
-      }),
-    )
-    setCallBookmark(true)
-    // 🐶 utilise `deleteMutation.mutate` pour declancher la mutation
-    // passe en paramètre un object avec {type,id}
-  }
   const isInList = data?.bookmark[
     type === TYPE_MOVIE ? 'movies' : 'series'
   ]?.includes(movie?.id)
@@ -194,8 +87,7 @@ const NetflixHeader = ({movie, type = TYPE_MOVIE}) => {
         <h1 className="synopsis">{movie?.overview ?? '...'}</h1>
       </div>
       <div className="banner--fadeBottom"></div>
-      {/* 🐶 n'utilise plus 'callBookmark' et 'status' mais 'mutateBookmarkError'   */}
-      {callBookmark && status === 'done' ? (
+      {!mutateBookmarkError ? (
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={4000}
@@ -206,14 +98,14 @@ const NetflixHeader = ({movie, type = TYPE_MOVIE}) => {
           </Alert>
         </Snackbar>
       ) : null}
-      {callBookmark && status === 'error' ? (
+      {mutateBookmarkError ? (
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={4000}
           onClose={() => setSnackbarOpen(false)}
         >
           <Alert severity="error" sx={{width: '100%'}}>
-            Problème lors de l'ajout : {error.message}
+            Problème lors de l'ajout : {mutateBookmarkError.message}
           </Alert>
         </Snackbar>
       ) : null}

@@ -10,20 +10,18 @@ const clientApi = async endpoint => {
   const startChar = endpoint.includes('?') ? `&` : `?`
   //await sleep(5000)
   const keyLang = `${startChar}api_key=${apiKey}&language=${lang}&page=${page}`
-  // 🐶 gère le catch pour extraire le message
-  // .catch(error => {
-  //   if (error.response) {
-  //     const err = {
-  //       ...error.response,
-  //       message: error.response?.data?.status_message,
-  //     }
-  //     return Promise.reject(err)
-  //   } else {
-  //     return Promise.reject(error)
-  //   }
-  // })
 
-  return axios.get(`${API_URL}/${endpoint}${keyLang}`)
+  return axios.get(`${API_URL}/${endpoint}${keyLang}`).catch(error => {
+    if (error.response) {
+      const err = {
+        ...error.response,
+        message: error.response?.data?.status_message,
+      }
+      return Promise.reject(err)
+    } else {
+      return Promise.reject(error)
+    }
+  })
 }
 
 const clientAuth = (endpoint, {token, data}) => {
