@@ -22,6 +22,8 @@ const clientApi = async endpoint => {
 }
 
 const clientAuth = (endpoint, {token, data}) => {
+  console.log('🚀 ~ clientAuth ~ {token, data}:', {token, data})
+  console.log('🚀 ~ clientAuth ~ endpoint:', endpoint)
   const config = {
     headers: {
       Authorization: token ? `Bearer ${token}` : undefined,

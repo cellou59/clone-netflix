@@ -2,6 +2,7 @@ import {useQuery, useMutation, useQueryClient} from 'react-query'
 import {clientApi} from './clientApi'
 import {useClientNetflix} from 'context/AuthContext'
 
+
 const useSearchMovie = query => {
   const {data} = useQuery(`search/multi?query=${query}`, () =>
     clientApi(`search/multi?query=${query}`),
@@ -119,6 +120,8 @@ const useDeleteBookmark = ({
   )
   return deleteMutation
 }
+
+
 
 export {
   useMovie,

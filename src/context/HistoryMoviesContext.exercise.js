@@ -1,19 +1,78 @@
-/* eslint-disable no-unused-vars */
 import * as React from 'react'
-// 🐶 créé un contexte 'HistoryMovieContext' avec 'createContext'
-const HistoryMovieContext = null
+import {TYPE_TV} from '../config'
+const HistoryMovieContext = React.createContext()
+const MAX_ELEMENTS = 3;
 
-// 🐶 créé un provider 'HistoryMovieProvider'
-const HistoryMovieProvider = props => {
-  // 🐶 créé 2 states 'movies' et 'series' initialisés à []
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'addMovie':
+      return {
+        ...state,
+        movies : [action.payload,state.movies.slice(0, MAX_ELEMENTS - 1)]
 
-  // retourne <HistoryMovieContext.Provider> en passant les props suivants :
-  // - value = movies, series, setMovies, setSeries
-  // - laisse passer ensuite tous les autres props avec un spread opérator {...props}
-  return null
+    }
+    case 'addSerie':
+      return{
+        ...state,
+        series : [action.payload,state.series.slice(0, MAX_ELEMENTS - 1)]
+      }   
+    case 'clear':
+      return{
+        ...state,
+        movies:[],
+        series:[]
+      }   
+    default:
+      throw new Error('Action non supporté')
+  }
 }
-// 🐶 créé un hook  'useNavigateMovie' qui retourn le contexte 'HistoryMovieContext'
-// ou une Error :"useNavigateMovie() s'utilise avec <HistoryMovieContext.Provider>"
-// si le context est null
 
-export {}
+const HistoryMovieProvider = props => {
+
+  const [state, dispatch] = React.useReducer(reducer, {movies: [], series: []})
+  const addMovie = React.useCallback(movie => {
+    dispatch({type: 'addMovie', payload: movie})
+  }, [])
+  const addSerie = React.useCallback(serie => {
+    dispatch({type: 'addSerie', payload: serie})
+  }, [])
+  const clearHistory = React.useCallback(() => {
+    dispatch({type:'clear'})
+},[])
+
+  const {movies, series} = state
+  const value = {movies, series, addMovie, addSerie,clearHistory}
+  return <HistoryMovieContext.Provider value={value} {...props} />
+}
+
+const useNavigateMovie = () => {
+  const context = React.useContext(HistoryMovieContext)
+  if (!context) {
+    throw Error(
+      "useNavigateMovie() s'utilise avec <HistoryMovieContext.Provider>",
+    )
+  }
+  return context
+}
+
+const useAddToHistory = (movie,type) =>{
+  const {addMovie, addSerie} = useNavigateMovie()
+
+  React.useEffect(() => {
+    if (movie) {
+      if (type === TYPE_TV) {
+        addMovie(movie)
+      } else {
+        addSerie(movie)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [movie])
+}
+
+const useClearHistory = () => {
+  const {clearHistory} = useNavigateMovie()
+  return clearHistory
+}
+
+export {HistoryMovieContext,HistoryMovieProvider, useNavigateMovie,useAddToHistory,useClearHistory}
