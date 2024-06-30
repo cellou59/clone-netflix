@@ -1,22 +1,40 @@
 import React from 'react'
+import { clientAuth } from 'utils/clientApi';
+const logs = [];
 
-// 🐶 Cette fonction loguera les information de profil en rouge
+let pile = []
 const logProfiler = data => {
-  console.log('%c profiler', 'color: LightCoral', data)
-}
-
-// 🐶 passe les props 'phases' et ...props
-function Profiler() {
-  // 🐶 créé une fonction handleRender qui fera le rendu du profiler
-  // passe lui tous les paramètres du 'onRender'
-  // 📝https://fr.reactjs.org/docs/profiler.html#onrender-callback
-  const handleRender = (id, phase) => {
-    // 🐶 conditionne l'appel de la fonction 'logProfiler' si 'phases' contient 'phase'
-    // pour n'appeler  'logProfiler' que sur certaines phases ['mount','update']
-    // 🐶 appelle logProfiler avec un objet qui contier tous les parametres
+  if (!pile.length) {
+    return
   }
+  console.log('%c profiler', 'color: LightCoral', pile)
+  clientAuth('monitoring', {data: pile})
+  pile = []
+}
+setInterval(logProfiler, 60000)
+function Profiler({phases,...props}) {
 
-  // 🐶 retourne <React.Profiler avec les bons props onRender et ...props
-  return <> </>
+  const handleRender = (
+    id, // la prop "id" du Profiler dont l’arborescence vient d’être mise à jour
+    phase, // soit "mount" (si on est au montage) soit "update" (pour une mise à jour)
+    actualDuration, // temps passé à faire le rendu de la mise à jour finalisée
+    baseDuration, // temps estimé du rendu pour l’ensemble du sous-arbre sans mémoïsation
+    startTime, // horodatage du début de rendu de cette mise à jour par React
+    commitTime, // horodatage de la finalisation de cette mise à jour par React
+    interactions, // Un Set des interactions qui constituent cette mise à jour) => {
+  ) => {
+    if (!phases.length || phases.includes(phase)) {
+      logProfiler({
+        id,
+        phase,
+        actualDuration,
+        baseDuration,
+        startTime,
+        commitTime,
+        interactions,
+      })
+    }
+  }
+  return <React.Profiler onRender={handleRender} {...props} />
 }
 export {Profiler}
